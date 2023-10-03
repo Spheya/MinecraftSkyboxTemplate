@@ -18,9 +18,6 @@ in vec4 pos2;
 
 out vec4 fragColor;
 
-const vec3 daySkyColor = vec3(124.0, 169.0, 255.0) / 255.0;
-const vec3 nightSkyColor = vec3(0.0);
-
 float vanillaSkyFog(vec3 view) {
     float f = max(view.y, 0.0);
     f = 1.0 - (f * f);
@@ -40,24 +37,20 @@ void main() {
 
     // Rendering the moon, which we use as the entire skybox
     uint moonPhase = uint(floor(texCoord0.x * 4.0)) + uint(floor(texCoord0.y * 2.0)) * 4u;
+    vec3 view = normalize((projInv * vec4(gl_FragCoord.xy / ScreenSize * 2.0 - 1.0, 1.0, 1.0)).xyz);
+    vec3 moonDirection = normalize(pos1.xyz / pos1.w + pos2.xyz / pos2.w);
 
-    vec4 screenPos = gl_FragCoord;
-    screenPos.xy = screenPos.xy / ScreenSize * 2.0 - 1.0;
-    screenPos.zw = vec2(1.0);
-    vec3 view = normalize((projInv * screenPos).xyz);
-
-    vec3 p1 = pos1.xyz / pos1.w;
-    vec3 p2 = pos2.xyz / pos2.w;
-    vec3 moonDirection = normalize(p1 + p2);
-
-    /********************
+    /************************************************************************
+    
     Put your custom skybox code below here (and remove the example)
 
-    moonphase - contains the phase of the moon (0-8, 0=full moon, 4=new moon)
-    view - 
-    *********************/
+    moonPhase - contains the phase of the moon (0-8, 0=full moon, 4=new moon)
+    view - worldspace viewing vector
+    moonDirection - worldspace direction towards the moon
+
+    *************************************************************************/
 
     // Example: vanilla minecraft skybox
-    vec3 skyColor = mix(nightSkyColor, daySkyColor, 1.0  / (1.0 + exp(5.0 * moonDirection.y)));
+    vec3 skyColor = mix(vec3(0.0), vec3(124.0, 169.0, 255.0) / 255.0, 1.0  / (1.0 + exp(5.0 * moonDirection.y)));
     fragColor = mix(vec4(skyColor, 1.0), FogColor, vanillaSkyFog(view));
 }
